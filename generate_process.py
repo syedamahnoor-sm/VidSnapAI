@@ -38,8 +38,6 @@ if __name__ == "__main__":
         with open("done.txt", "w") as f:
             pass
 
-    while True:
-
         print("Processing queue...")
 
         with open("done.txt", "r") as f:
@@ -69,4 +67,3 @@ if __name__ == "__main__":
                     print("ERROR PROCESSING:", folder)
                     print(e)
 
-        time.sleep(4)
