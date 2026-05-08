@@ -1,0 +1,21 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="128" y2="128" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C3AED"/>
+      <stop offset="1" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+
+  <!-- Play Button -->
+  <polygon points="50,38 92,64 50,90" fill="white"/>
+
+  <!-- AI Spark -->
+  <path d="M28 30L31 38L39 41L31 44L28 52L25 44L17 41L25 38L28 30Z" fill="#FDE68A"/>
+
+  <!-- Bottom Snap Line -->
+  <rect x="28" y="102" width="72" height="6" rx="3" fill="white" opacity="0.85"/>
+</svg>
+
