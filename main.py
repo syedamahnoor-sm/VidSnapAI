@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 import uuid
 from werkzeug.utils import secure_filename
 import os
+import subprocess
 
 UPLOAD_FOLDER = "user_uploads"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
@@ -61,6 +62,7 @@ def create():
 
         print("input.txt created")
 
+        subprocess.run(["python", "generate_process.py"])
     return render_template("create.html", myid=myid)
 
 
