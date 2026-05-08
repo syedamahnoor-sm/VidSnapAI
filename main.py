@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 import uuid
 from werkzeug.utils import secure_filename
 import os
 import subprocess
+import sys
 
 UPLOAD_FOLDER = "user_uploads"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
@@ -62,8 +63,8 @@ def create():
 
         print("input.txt created")
 
-        subprocess.run(["python", "generate_process.py"])
-    return render_template("create.html", myid=myid)
+        subprocess.Popen([sys.executable, "generate_process.py"])
+    return redirect("/gallery")
 
 
 @app.route("/gallery")
