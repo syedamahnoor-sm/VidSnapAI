@@ -1,28 +1,41 @@
-# Virtual Environment
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
 venv/
 env/
 ENV/
 
-# Python cache
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+# Environment variables
+.env
 
 # VS Code
 .vscode/
+
+# User uploads
+user_uploads/
+
+# Generated reels/videos
+static/reels/
+
+# Logs/temp
+*.log
+*.tmp
 
 # OS files
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
+# Python build files
+build/
+dist/
+*.egg-info/
 
-# Environment variables (if you add later)
-.env
+# FFmpeg outputs
+*.mp4
+*.mp3
 
-# Flask instance folder
-instance/
-
-*.sqlite3
+# Optional
+done.txt

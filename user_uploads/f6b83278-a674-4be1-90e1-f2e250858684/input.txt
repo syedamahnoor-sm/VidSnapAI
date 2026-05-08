@@ -1,2 +1,0 @@
-file 'download.jpg'
-duration 1
