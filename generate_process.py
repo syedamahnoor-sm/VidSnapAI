@@ -41,15 +41,17 @@ def create_reel(folder):
 
     output_path = f"static/reels/{folder}.mp4"
 
-    command = f"""
-    ffmpeg -y -loop 1 -i "{image_path}" -i "{audio_path}" \
-    -c:v libx264 -tune stillimage \
-    -c:a aac -b:a 192k \
-    -pix_fmt yuv420p \
-    -shortest \
-    -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black" \
-    "{output_path}"
-    """
+    command = f""" ffmpeg -y -loop 1 -i "{image_path}" -i "{audio_path}" \
+                -vf "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black" \
+                -c:v libx264 \
+                -preset ultrafast \
+                -tune stillimage \
+                -r 15 \
+                -c:a aac \
+                -shortest \
+                -pix_fmt yuv420p \
+                "{output_path}"
+                """
 
     print("Running FFmpeg command...")
 
