@@ -2,7 +2,6 @@
 # and converts them to reels if not already processed
 
 import os
-import time
 import subprocess
 
 from text_to_audio import text_to_speech_file
@@ -22,7 +21,35 @@ def text_to_audio(folder):
 
 def create_reel(folder):
 
-    command = f"""ffmpeg -f concat -safe 0 -i user_uploads/{folder}/input.txt -i user_uploads/{folder}/audio.mp3 -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black" -c:v libx264 -c:a aac -shortest -r 30 -pix_fmt yuv420p static/reels/{folder}.mp4"""
+    folder_path = f"user_uploads/{folder}"
+
+    # Find uploaded image dynamically
+    image_file = None
+
+    for file in os.listdir(folder_path):
+
+        if file.lower().endswith((".png", ".jpg", ".jpeg")):
+            image_file = file
+            break
+
+    if not image_file:
+        raise Exception("No image file found")
+
+    image_path = os.path.join(folder_path, image_file)
+
+    audio_path = os.path.join(folder_path, "audio.mp3")
+
+    output_path = f"static/reels/{folder}.mp4"
+
+    command = f"""
+    ffmpeg -y -loop 1 -i "{image_path}" -i "{audio_path}" \
+    -c:v libx264 -tune stillimage \
+    -c:a aac -b:a 192k \
+    -pix_fmt yuv420p \
+    -shortest \
+    -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black" \
+    "{output_path}"
+    """
 
     print("Running FFmpeg command...")
 
@@ -35,35 +62,36 @@ if __name__ == "__main__":
 
     # Create done.txt if missing
     if not os.path.exists("done.txt"):
+
         with open("done.txt", "w") as f:
             pass
 
-        print("Processing queue...")
+    print("Processing queue...")
 
-        with open("done.txt", "r") as f:
-            done_folders = f.readlines()
+    with open("done.txt", "r") as f:
+        done_folders = f.readlines()
 
-        done_folders = [f.strip() for f in done_folders]
+    done_folders = [f.strip() for f in done_folders]
 
-        folders = os.listdir("user_uploads")
+    folders = os.listdir("user_uploads")
 
-        for folder in folders:
+    for folder in folders:
 
-            if folder not in done_folders:
+        if folder not in done_folders:
 
-                try:
+            try:
 
-                    text_to_audio(folder)
+                text_to_audio(folder)
 
-                    create_reel(folder)
+                create_reel(folder)
 
-                    with open("done.txt", "a") as f:
-                        f.write(folder + "\n")
+                with open("done.txt", "a") as f:
+                    f.write(folder + "\n")
 
-                    print("DONE - ", folder)
+                print("DONE - ", folder)
 
-                except Exception as e:
+            except Exception as e:
 
-                    print("ERROR PROCESSING:", folder)
-                    print(e)
+                print("ERROR PROCESSING:", folder)
 
+                print(e)

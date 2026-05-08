@@ -11,8 +11,10 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+# Create required folders automatically
 os.makedirs("user_uploads", exist_ok=True)
 os.makedirs("static/reels", exist_ok=True)
+
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -25,6 +27,7 @@ def home():
 
 @app.route("/create", methods=["GET", "POST"])
 def create():
+
     myid = uuid.uuid4()
 
     if request.method == "POST":
@@ -32,11 +35,11 @@ def create():
         rec_id = request.form.get("uuid")
         desc = request.form.get("text")
 
-        input_files = []
-
         upload_path = os.path.join(app.config["UPLOAD_FOLDER"], rec_id)
+
         os.makedirs(upload_path, exist_ok=True)
 
+        # Save uploaded images
         for key, value in request.files.items():
 
             file = request.files[key]
@@ -47,28 +50,25 @@ def create():
 
                 file.save(os.path.join(upload_path, filename))
 
-                input_files.append(filename)
-
                 print("Saved:", filename)
 
-        # Save description
+        # Save description text
         with open(os.path.join(upload_path, "desc.txt"), "w") as f:
             f.write(desc)
 
-        # Create input.txt
-        with open(os.path.join(upload_path, "input.txt"), "w") as f:
-            for fl in input_files:
-                f.write(f"file '{fl}'\n")
-                f.write("duration 1\n")
+        print("Description saved")
 
-        print("input.txt created")
-
+        # Run reel generation in background
         subprocess.Popen([sys.executable, "generate_process.py"])
+
     return render_template("create.html", myid=myid)
+
 
 @app.route("/gallery")
 def gallery():
+
     reels = os.listdir("static/reels")
+
     return render_template("gallery.html", reels=reels)
 
 
