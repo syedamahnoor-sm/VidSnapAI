@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request
 import uuid
 from werkzeug.utils import secure_filename
 import os
@@ -64,8 +64,7 @@ def create():
         print("input.txt created")
 
         subprocess.Popen([sys.executable, "generate_process.py"])
-    return redirect("/gallery")
-
+    return render_template("create.html", myid=myid)
 
 @app.route("/gallery")
 def gallery():
