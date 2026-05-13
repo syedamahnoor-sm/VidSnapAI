@@ -1,29 +1,72 @@
-# This file looks for new folders inside user_uploads
-# and converts them to reels if not already processed
-
 import os
+import sys
 import subprocess
+
+from flask import Flask
+
+from database import db
+from models import Reel
 
 from text_to_audio import text_to_speech_file
 
+# =========================
+# Flask App Setup
+# =========================
 
-def text_to_audio(folder):
+app = Flask(__name__)
 
-    print("TTA - ", folder)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///vidsnap.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    with open(f"user_uploads/{folder}/desc.txt") as f:
-        text = f.read()
+db.init_app(app)
 
-    print(text, folder)
 
+# =========================
+# Get Reel ID from main.py
+# =========================
+
+reel_id = int(sys.argv[1])
+
+
+# =========================
+# Text To Audio Function
+# =========================
+
+
+def text_to_audio(reel, folder):
+
+    print("Generating Audio For:", folder)
+
+    text = reel.description
+
+    print("TEXT:", text)
+
+    audio_path = os.path.join("user_uploads", folder, "audio.mp3")
+
+    # Generate audio using Edge-TTS
     text_to_speech_file(text, folder)
 
+    # Save audio path in DB
+    reel.audio_path = audio_path
 
-def create_reel(folder):
+    db.session.commit()
+
+    print("Audio Generated")
+
+
+# =========================
+# Reel Creation Function
+# =========================
+
+
+def create_reel(reel, folder):
 
     folder_path = f"user_uploads/{folder}"
 
-    # Find uploaded image dynamically
+    # =========================
+    # Find Uploaded Image
+    # =========================
+
     image_file = None
 
     for file in os.listdir(folder_path):
@@ -41,59 +84,112 @@ def create_reel(folder):
 
     output_path = f"static/reels/{folder}.mp4"
 
-    command = f""" ffmpeg -y -loop 1 -i "{image_path}" -i "{audio_path}" \
-                -vf "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black" \
-                -c:v libx264 \
-                -preset ultrafast \
-                -tune stillimage \
-                -r 15 \
-                -c:a aac \
-                -shortest \
-                -pix_fmt yuv420p \
-                "{output_path}"
-                """
+    # =========================
+    # FFmpeg Command
+    # =========================
+    print(os.path.exists(audio_path))
+    command = [
+        "ffmpeg",
+        "-y",
+        "-loop",
+        "1",
+        "-i",
+        image_path,
+        "-i",
+        audio_path,
+        "-vf",
+        "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black",
+        "-c:v",
+        "libx264",
+        "-preset",
+        "ultrafast",
+        "-tune",
+        "stillimage",
+        "-r",
+        "15",
+        "-c:a",
+        "aac",
+        "-shortest",
+        "-pix_fmt",
+        "yuv420p",
+        output_path,
+    ]
 
-    print("Running FFmpeg command...")
+    print("Running FFmpeg Command...")
+    print("Image Path:", image_path)
+    print("Audio Path:", audio_path)
+    print("Output Path:", output_path)
+    subprocess.run(command, check=True)
 
-    subprocess.run(command, shell=True, check=True)
+    print("Reel Generated")
 
-    print("CR - ", folder)
+    # =========================
+    # Save Video Path in DB
+    # =========================
 
+    reel.video_path = output_path
+
+    reel.status = "completed"
+
+    db.session.commit()
+
+
+# =========================
+# Main Processing Logic
+# =========================
 
 if __name__ == "__main__":
 
-    # Create done.txt if missing
-    if not os.path.exists("done.txt"):
+    with app.app_context():
 
-        with open("done.txt", "w") as f:
-            pass
+        # =========================
+        # Fetch Reel From Database
+        # =========================
 
-    print("Processing queue...")
+        reel = Reel.query.get(reel_id)
 
-    with open("done.txt", "r") as f:
-        done_folders = f.readlines()
+        if not reel:
 
-    done_folders = [f.strip() for f in done_folders]
+            print("Reel Not Found")
 
-    folders = os.listdir("user_uploads")
+            sys.exit(1)
 
-    for folder in folders:
+        try:
 
-        if folder not in done_folders:
+            print("Processing Reel ID:", reel.id)
 
-            try:
+            # =========================
+            # Get Folder Name
+            # =========================
 
-                text_to_audio(folder)
+            folder = reel.title.replace("Reel-", "")
 
-                create_reel(folder)
+            # =========================
+            # Update Status
+            # =========================
 
-                with open("done.txt", "a") as f:
-                    f.write(folder + "\n")
+            reel.status = "processing"
 
-                print("DONE - ", folder)
+            db.session.commit()
 
-            except Exception as e:
+            # =========================
+            # Generate Audio
+            # =========================
 
-                print("ERROR PROCESSING:", folder)
+            text_to_audio(reel, folder)
 
-                print(e)
+            # =========================
+            # Generate Video Reel
+            # =========================
+
+            create_reel(reel, folder)
+
+            print("Processing Completed")
+
+        except Exception as e:
+
+            reel.status = "failed"
+
+            db.session.commit()
+
+            print("ERROR:", e)

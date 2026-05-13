@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Virtual environment
+# Virtual environments
 venv/
 env/
 ENV/
@@ -11,8 +11,16 @@ ENV/
 # Environment variables
 .env
 
+# SQLite database
+*.db
+*.sqlite3
+*.sqlite3-journal
+
 # VS Code
 .vscode/
+
+# JetBrains IDEs
+.idea/
 
 # User uploads
 user_uploads/
@@ -24,18 +32,21 @@ static/reels/
 *.log
 *.tmp
 
-# OS files
-.DS_Store
-Thumbs.db
-
 # Python build files
 build/
 dist/
 *.egg-info/
 
-# FFmpeg outputs
-*.mp4
-*.mp3
+# Cache folders
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-# Optional
-done.txt
+# Coverage reports
+htmlcov/
+.coverage
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini

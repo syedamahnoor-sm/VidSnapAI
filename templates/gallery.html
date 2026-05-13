@@ -7,14 +7,45 @@
 {% endblock %}
 
 {% block content %}
+
 <div class="container gallery-container">
+
     <h1 class="gallery-title">Reel Gallery</h1>
+
     <div class="gallery-grid">
 
         {% for reel in reels %}
-        <video src="/static/reels/{{reel}}" controls></video>
+
+        <div class="reel-card">
+
+            {% if reel.video_path %}
+
+            <video controls>
+                <source src="{{ reel.video_path }}" type="video/mp4">
+            </video>
+
+            {% else %}
+
+            <div class="processing-box">
+                <p>Processing Reel...</p>
+            </div>
+
+            {% endif %}
+
+            <div class="reel-info">
+
+                <h3>{{ reel.title }}</h3>
+
+                <p>Status: {{ reel.status }}</p>
+
+            </div>
+
+        </div>
+
         {% endfor %}
 
     </div>
+
 </div>
+
 {% endblock %}
