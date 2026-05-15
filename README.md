@@ -1,19 +1,21 @@
 # VidSnapAI 🎬
 
-VidSnapAI is an AI-powered reel generation web application built using Python, Flask, FFmpeg, and ElevenLabs Text-to-Speech APIs.
-The application allows users to upload images, generate AI voiceovers from text prompts, and automatically create vertical short-form videos suitable for platforms like TikTok, Instagram Reels, and YouTube Shorts.
+VidSnapAI is an AI-powered reel generation web application built using Python, Flask, SQLite, FFmpeg, and Microsoft Edge-TTS. The application allows users to upload images, generate AI voiceovers from text prompts, and automatically create vertical short-form videos suitable for platforms like TikTok, Instagram Reels, and YouTube Shorts.
 
 ---
 
 # Features 🚀
 
-* Upload multiple images
-* Generate realistic AI voiceovers using ElevenLabs
+* Upload images for reel generation
+* Generate realistic AI voiceovers using Edge-TTS
 * Automatically create short-form vertical videos
 * Combine images and audio into reels using FFmpeg
-* Reel gallery to preview generated videos
-* Queue-based processing system
-* Simple and lightweight Flask backend
+* Database-driven reel management using SQLite
+* Automatic reel status updates (Processing → Completed)
+* Dynamic reel gallery with auto-refresh
+* Background reel processing system
+* Lightweight Flask backend architecture
+* Responsive gallery UI
 
 ---
 
@@ -23,6 +25,11 @@ The application allows users to upload images, generate AI voiceovers from text 
 
 * Python
 * Flask
+* Flask-SQLAlchemy
+
+## Database
+
+* SQLite
 
 ## Media Processing
 
@@ -30,24 +37,46 @@ The application allows users to upload images, generate AI voiceovers from text 
 
 ## AI Services
 
-* ElevenLabs Text-to-Speech API
+* Microsoft Edge-TTS
 
 ## Frontend
 
 * HTML
 * CSS
 * Bootstrap
+* Vanilla JavaScript
 
 ---
 
 # Project Workflow ⚙️
 
-1. User uploads images
+1. User uploads image
 2. User enters text prompt/description
-3. AI generates voice narration
-4. Images and audio are processed using FFmpeg
-5. Final reel is generated automatically
-6. Reel is displayed in the gallery
+3. Reel metadata is stored in SQLite database
+4. Edge-TTS generates AI voice narration
+5. FFmpeg combines image + audio into vertical reel
+6. Reel status updates automatically
+7. Final reel appears in gallery dynamically
+
+---
+
+# Architecture Improvements 🔥
+
+This project was upgraded from a folder-based architecture to a database-driven workflow.
+
+### Previous Architecture
+
+* `desc.txt`
+* `done.txt`
+* folder scanning queue
+
+### Current Architecture
+
+* SQLite database
+* SQLAlchemy models
+* Reel status tracking
+* Database-driven gallery
+* Dynamic processing updates
 
 ---
 
@@ -64,6 +93,8 @@ VidSnapAI/
 │
 ├── user_uploads/
 │
+├── database.py
+├── models.py
 ├── main.py
 ├── generate_process.py
 ├── text_to_audio.py
@@ -78,7 +109,8 @@ VidSnapAI/
 ## 1. Clone Repository
 
 ```bash
-git clone https://github.com/syedamahnoor9e-eng/VidSnapAI.git
+git clone https://github.com/syedamahnoor-sm/VidSnapAI.git
+
 cd VidSnapAI
 ```
 
@@ -92,13 +124,13 @@ python -m venv venv
 
 ### Activate Virtual Environment
 
-#### Windows
+### Windows
 
 ```bash
 venv\Scripts\activate
 ```
 
-#### Linux/Mac
+### Linux / Mac
 
 ```bash
 source venv/bin/activate
@@ -114,11 +146,11 @@ pip install -r requirements.txt
 
 ---
 
-## 4. Install FFmpeg
+# 4. Install FFmpeg
 
 Download and install FFmpeg:
 
-### Windows
+## Windows
 
 * Download FFmpeg
 * Add FFmpeg `bin` path to Environment Variables
@@ -131,17 +163,7 @@ ffmpeg -version
 
 ---
 
-## 5. Configure ElevenLabs API Key
-
-Create a `.env` file:
-
-```env
-ELEVENLABS_API_KEY=your_api_key_here
-```
-
----
-
-## 6. Run Flask Application
+# 5. Run Flask Application
 
 ```bash
 python main.py
@@ -149,27 +171,17 @@ python main.py
 
 ---
 
-## 7. Run Background Processing Script
-
-Open another terminal:
-
-```bash
-python generate_process.py
-```
-
----
-
 # Requirements 📦
 
-Some major dependencies:
+Major dependencies:
 
 * Flask
-* requests
-* python-dotenv
+* Flask-SQLAlchemy
+* edge-tts
 * FFmpeg
-* ElevenLabs API
+* gunicorn
 
-Install all using:
+Install all dependencies using:
 
 ```bash
 pip install -r requirements.txt
@@ -179,17 +191,18 @@ pip install -r requirements.txt
 
 # Future Improvements 🔥
 
-Planned features:
+Planned future upgrades:
 
 * User authentication
 * AI subtitle generation
 * Background music support
+* Multiple image slideshow reels
 * Reel templates
-* Modern dashboard UI
-* Database integration
-* Queue workers with Celery/Redis
-* Cloud deployment
-* API support
+* PostgreSQL integration
+* Cloudinary/S3 storage
+* Celery & Redis queue workers
+* Download reel feature
+* AI thumbnail generation
 
 ---
 
@@ -198,12 +211,14 @@ Planned features:
 This project helped in learning:
 
 * Flask backend development
-* File handling in Python
-* AI API integration
+* SQLite database integration
+* SQLAlchemy ORM
+* AI/TTS integration
 * FFmpeg media processing
-* Background task automation
-* Video generation workflows
+* Background processing workflows
+* Dynamic frontend updates
 * Full-stack project structuring
+* Deployment workflows
 
 ---
 
