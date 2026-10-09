@@ -1,5 +1,6 @@
 import os
 import sys
+import uuid
 import subprocess
 
 from flask import Flask
@@ -163,6 +164,10 @@ if __name__ == "__main__":
             # =========================
 
             folder = reel.title.replace("Reel-", "")
+
+            # Defence in depth: the folder must be a canonical UUID
+            if str(uuid.UUID(folder)) != folder:
+                raise ValueError("Invalid reel folder name")
 
             # =========================
             # Update Status

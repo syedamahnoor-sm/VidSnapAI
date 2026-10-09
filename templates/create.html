@@ -11,6 +11,9 @@
     <div class="container">
         <div class="upload-container">
             <h1 class="upload-title">Create Your Reel</h1>
+            {% if error %}
+            <div class="alert alert-danger" role="alert">{{ error }}</div>
+            {% endif %}
             <p class="upload-instructions">Upload your video files to create an amazing reel. You can upload multiple files.</p>
             
             <form action="/create" enctype="multipart/form-data" method="post" class="dropzone" id="myDropzone">
