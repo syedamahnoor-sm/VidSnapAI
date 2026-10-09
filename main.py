@@ -10,6 +10,7 @@ from models import Reel
 
 UPLOAD_FOLDER = "user_uploads"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+MAX_TEXT_LENGTH = 1000
 
 app = Flask(__name__)
 
@@ -18,6 +19,7 @@ app = Flask(__name__)
 # =========================
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # reject request bodies over 10 MB
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///vidsnap.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -69,29 +71,50 @@ def create():
 
     if request.method == "POST":
 
-        rec_id = request.form.get("uuid")
-        desc = request.form.get("text")
+        def reject(message):
+            return render_template("create.html", myid=myid, error=message), 400
 
-        # Create upload path
+        # The folder name comes from the browser, so it must be a real UUID.
+        # (An unchecked value such as "../../x" would let a request write
+        # files outside the uploads folder.) str() normalises the format.
+        try:
+            rec_id = str(uuid.UUID(request.form.get("uuid", "")))
+        except ValueError:
+            return reject("Invalid request. Please reload the page and try again.")
+
+        desc = (request.form.get("text") or "").strip()
+
+        if not desc:
+            return reject("Please enter the text to be used for the voiceover.")
+
+        if len(desc) > MAX_TEXT_LENGTH:
+            return reject(f"Text is too long (max {MAX_TEXT_LENGTH} characters).")
+
+        # Only create the folder once the request is known to be valid
         upload_path = os.path.join(app.config["UPLOAD_FOLDER"], rec_id)
-
-        os.makedirs(upload_path, exist_ok=True)
 
         # =========================
         # Save Uploaded Images
         # =========================
 
-        for key, value in request.files.items():
+        saved_images = []
 
-            file = request.files[key]
+        for key, file in request.files.items():
 
             if file and allowed_file(file.filename):
+
+                os.makedirs(upload_path, exist_ok=True)
 
                 filename = secure_filename(file.filename)
 
                 file.save(os.path.join(upload_path, filename))
 
+                saved_images.append(filename)
+
                 print("Saved:", filename)
+
+        if not saved_images:
+            return reject("Please upload at least one PNG or JPG image.")
 
         # =========================
         # Save Reel Data in Database
@@ -114,6 +137,15 @@ def create():
     return render_template("create.html", myid=myid)
 
 
+@app.errorhandler(413)
+def too_large(_error):
+    return render_template(
+        "create.html",
+        myid=uuid.uuid4(),
+        error="Upload too large (max 10 MB in total).",
+    ), 413
+
+
 # =========================
 # Gallery Route
 # =========================
@@ -133,4 +165,10 @@ def gallery():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # The Werkzeug debugger allows code execution, so it must never be on in
+    # production. Opt in locally with:  FLASK_DEBUG=1 python main.py
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
+        debug=os.environ.get("FLASK_DEBUG") == "1",
+    )
